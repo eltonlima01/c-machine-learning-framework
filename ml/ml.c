@@ -186,3 +186,16 @@ float getParam_y(const Dataset *dataset, int index)
 {
     return dataset->param_y[index];
 }
+
+float MSE(const Dataset *dataset, const LinearModel *linearModel)
+{
+    float error = 0.0f;
+
+    for (int i = 0; i < dataset->samples; i++)
+    {
+        const float e = dataset->param_y[i] - predict(linearModel, dataset->param_x[i]);
+        error += e * e;
+    }
+
+    return error / dataset->samples;
+}
