@@ -199,3 +199,37 @@ float MSE(const Dataset *dataset, const LinearModel *linearModel)
 
     return error / dataset->samples;
 }
+
+void train(const Dataset *dataset, LinearModel *linearModel, float trainingRate, int epochs)
+{
+    if ((linearModel == NULL) || (dataset == NULL) || (dataset->samples == 0))
+    {
+        return;
+    }
+
+    for (int epoch = 0; epoch < epochs; epoch++)
+    {
+        float sumGrad_0 = 0.0f;
+        float sumGrad_1 = 0.0f;
+
+        for (int i = 0; i < dataset->samples; i++)
+        {
+            const float error = predict(linearModel, dataset->param_x[i]);
+
+            sumGrad_0 += 2.0f * (error - dataset->param_y[i]);
+            sumGrad_1 += 2.0f * dataset->param_x[i] * (error - dataset->param_y[i]);
+        }
+
+        float grad_0 = sumGrad_0 / dataset->samples;
+        float grad_1 = sumGrad_1 / dataset->samples;
+
+        linearModel->param_0 -= trainingRate * grad_0;
+        linearModel->param_1 -= trainingRate * grad_1;
+
+        if ((epoch % 1000) == 0)
+        {
+            printf("[Epoch %d]\nMSE: %.3f\t-\tθ⁰ = %.3f\t-\tθ¹ = %.3f\n\n", epoch, MSE(dataset, linearModel),
+                   linearModel->param_0, linearModel->param_1);
+        }
+    }
+}

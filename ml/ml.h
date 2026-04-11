@@ -19,3 +19,5 @@ float getParam_x(const Dataset *dataset, int index);
 float getParam_y(const Dataset *dataset, int index);
 
 float MSE(const Dataset *dataset, const LinearModel *linearModel);
+
+void train(const Dataset *dataset, LinearModel *linearModel, float trainingRate, int epochs);
