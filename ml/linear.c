@@ -96,7 +96,7 @@ void train(const Dataset *dataset, LinearModel *linearModel, float trainingRate,
 
         if ((epoch % 1000) == 0)
         {
-            printf("[Epoch %d]\nMSE: %.3f\t-\tθ⁰ = %.3f\t-\tθ¹ = %.3f\n\n", epoch, MSE(dataset, linearModel),
+            printf("[Epoch %d]\nMSE: %.3f - θ⁰ = %.3f - θ¹ = %.3f\n", epoch, MSE(dataset, linearModel),
                    linearModel->param_0, linearModel->param_1);
         }
     }
