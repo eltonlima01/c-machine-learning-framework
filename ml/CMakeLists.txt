@@ -7,6 +7,8 @@ set_target_properties(ml PROPERTIES
     C_STANDARD_REQUIRED true
 )
 
+find_package(OpenMP REQUIRED)
+
 target_sources(ml
     PRIVATE
         linear.c
@@ -17,4 +19,9 @@ target_sources(ml
         BASE_DIRS .
         FILES
             ml.h
+)
+
+target_link_libraries(ml
+    PUBLIC
+        OpenMP::OpenMP_C
 )
