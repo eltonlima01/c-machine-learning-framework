@@ -1,7 +1,10 @@
-#include "ml.h"
+#include <ml.h>
 
+#include <omp.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+inline static float PREDICT(const LinearModel *linearModel, const float x);
 
 // ================================================================ //
 
@@ -58,14 +61,16 @@ float lm_getParam_1(const LinearModel *linearModel)
 float MSE(const Dataset *dataset, const LinearModel *linearModel)
 {
     float error = 0.0f;
+    const int samples = dataset_getSamples(dataset);
 
-    for (int i = 0; i < dataset_getSamples(dataset); i++)
+#pragma omp parallel for reduction(+ : error)
+    for (int i = 0; i < samples; i++)
     {
-        const float e = dataset_getParam_y(dataset, i) - predict(linearModel, dataset_getParam_x(dataset, i));
+        const float e = dataset_getParam_y(dataset, i) - PREDICT(linearModel, dataset_getParam_x(dataset, i));
         error += e * e;
     }
 
-    return error / dataset_getSamples(dataset);
+    return error / samples;
 }
 
 void train(const Dataset *dataset, LinearModel *linearModel, float trainingRate, int epochs)
@@ -75,29 +80,33 @@ void train(const Dataset *dataset, LinearModel *linearModel, float trainingRate,
         return;
     }
 
+    const int samples = dataset_getSamples(dataset);
+
     for (int epoch = 0; epoch < epochs; epoch++)
     {
         float sumGrad_0 = 0.0f;
         float sumGrad_1 = 0.0f;
 
-        for (int i = 0; i < dataset_getSamples(dataset); i++)
+#pragma omp parallel for reduction(+ : sumGrad_0, sumGrad_1)
+        for (int i = 0; i < samples; i++)
         {
-            const float error = predict(linearModel, dataset_getParam_x(dataset, i));
+            const float param_x = dataset_getParam_x(dataset, i);
+            const float param_y = dataset_getParam_y(dataset, i);
 
-            sumGrad_0 += 2.0f * (error - dataset_getParam_y(dataset, i));
-            sumGrad_1 += 2.0f * dataset_getParam_x(dataset, i) * (error - dataset_getParam_y(dataset, i));
+            const float error = PREDICT(linearModel, param_x);
+
+            sumGrad_0 += 2.0f * (error - param_y);
+            sumGrad_1 += 2.0f * param_x * (error - param_y);
         }
 
-        float grad_0 = sumGrad_0 / dataset_getSamples(dataset);
-        float grad_1 = sumGrad_1 / dataset_getSamples(dataset);
-
-        linearModel->param_0 -= trainingRate * grad_0;
-        linearModel->param_1 -= trainingRate * grad_1;
-
-        if ((epoch % 1000) == 0)
-        {
-            printf("[Epoch %d]\nMSE: %.3f - θ⁰ = %.3f - θ¹ = %.3f\n", epoch, MSE(dataset, linearModel),
-                   linearModel->param_0, linearModel->param_1);
-        }
+        linearModel->param_0 -= trainingRate * (sumGrad_0 / samples);
+        linearModel->param_1 -= trainingRate * (sumGrad_1 / samples);
     }
+}
+
+// ================================================================ //
+
+inline static float PREDICT(const LinearModel *linearModel, const float x)
+{
+    return (linearModel->param_0 + (linearModel->param_1 * x));
 }
