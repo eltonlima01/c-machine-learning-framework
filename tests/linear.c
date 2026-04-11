@@ -2,7 +2,7 @@
 // Linear regression model & prediction tests //
 // ================================================================ //
 
-#include "../ml/ml.h"
+#include <ml.h>
 #include <stdio.h>
 
 int main(void)

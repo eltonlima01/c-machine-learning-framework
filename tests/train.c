@@ -2,7 +2,7 @@
 // Training test //
 // ================================================================ //
 
-#include "../ml/ml.h"
+#include <ml.h>
 #include <stdio.h>
 
 int main(void)
@@ -13,6 +13,7 @@ int main(void)
     printf("Initial parameters: %.3f, %.3f\n\n", lm_getParam_0(linearModel), lm_getParam_1(linearModel));
 
     train(dataset, linearModel, 0.0001f, 10000);
+    putchar('\n');
 
     printf("Final parameters: %.3f, %.3f\n", lm_getParam_0(linearModel), lm_getParam_1(linearModel));
 
