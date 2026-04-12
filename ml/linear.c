@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define OMP_THRESHOLD 1024
+
 // **************************************************************** //
 // * Linear Model * //
 // **************************************************************** //
@@ -75,12 +77,12 @@ float mse(const Dataset *dataset, const LinearModel *linear_model)
 {
     float mean_squared_error = 0.0f;
 
+    const int samples = dataset_getSamples(dataset);
+
     const float *param_x = dataset_getParam_x(dataset);
     const float *param_y = dataset_getParam_y(dataset);
 
-    const int samples = dataset_getSamples(dataset);
-
-#pragma omp parallel for reduction(+ : mean_squared_error)
+#pragma omp parallel for reduction(+ : mean_squared_error) if (samples > OMP_THRESHOLD)
     for (int i = 0; i < samples; i++)
     {
         const float e = param_y[i] - PREDICT(linear_model, param_x[i]);
@@ -98,15 +100,18 @@ void train(const Dataset *dataset, LinearModel *linear_model, const float traini
     }
 
     const int samples = dataset_getSamples(dataset);
+
     const float *param_x = dataset_getParam_x(dataset);
     const float *param_y = dataset_getParam_y(dataset);
+
+    const float alpha = training_rate / samples;
 
     for (int epoch = 0; epoch < epochs; epoch++)
     {
         float sum_grad_0 = 0.0f;
         float sum_grad_1 = 0.0f;
 
-#pragma omp parallel for reduction(+ : sum_grad_0, sum_grad_1)
+#pragma omp parallel for reduction(+ : sum_grad_0, sum_grad_1) if (samples > OMP_THRESHOLD)
         for (int i = 0; i < samples; i++)
         {
             const float prediction = PREDICT(linear_model, param_x[i]);
@@ -116,7 +121,7 @@ void train(const Dataset *dataset, LinearModel *linear_model, const float traini
             sum_grad_1 += param_x[i] * grad_0;
         }
 
-        linear_model->param_0 -= training_rate * (sum_grad_0 / samples);
-        linear_model->param_1 -= training_rate * (sum_grad_1 / samples);
+        linear_model->param_0 -= alpha * sum_grad_0;
+        linear_model->param_1 -= alpha * sum_grad_1;
     }
 }

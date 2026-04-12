@@ -21,7 +21,7 @@ int main(void)
     Dataset *dataset_2 = newDataset("tests/datasets/ecommerce_user_behavior_8000.csv", "age", "time_on_site", 8000);
 
     puts("|| **************************************************************** ||");
-    puts("|| * SINGLE CORE MEAN SQUARED ERROR CALCULATION * ||");
+    puts("|| *                  SINGLE CORE MODEL TRAINING                  * ||");
     puts("|| **************************************************************** ||\n");
 
     {
@@ -49,7 +49,7 @@ int main(void)
     }
 
     puts("|| **************************************************************** ||");
-    puts("|| * PARALLALEL MEAN SQUARED ERROR CALCULATION *||");
+    puts("|| *                   PARALLALEL MODEL TRAINING                  * ||");
     puts("|| **************************************************************** ||\n");
 
     {

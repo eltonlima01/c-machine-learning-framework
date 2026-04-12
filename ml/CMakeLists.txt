@@ -4,10 +4,8 @@ add_library(ml STATIC)
 
 set_target_properties(ml PROPERTIES
     C_STANDARD 99
-    C_STANDARD_REQUIRED true
+    C_STANDARD_REQUIRED True
 )
-
-find_package(OpenMP REQUIRED)
 
 target_sources(ml
     PRIVATE
@@ -21,7 +19,9 @@ target_sources(ml
             ml.h
 )
 
+find_package(OpenMP REQUIRED)
+
 target_link_libraries(ml
-    PUBLIC
+    PRIVATE
         OpenMP::OpenMP_C
 )
