@@ -4,7 +4,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-// ================================================================ //
+// **************************************************************** //
+// * Dataset * //
+// **************************************************************** //
 
 typedef struct Dataset
 {
@@ -13,7 +15,7 @@ typedef struct Dataset
     int samples;
 } Dataset;
 
-// ================================================================ //
+// **************************************************************** //
 
 Dataset *newDataset(const char *datasetPath, const char *param_x, const char *param_y, const int samples)
 {
@@ -140,16 +142,16 @@ void deleteDataset(Dataset **dataset)
     }
 }
 
-// ================================================================ //
+// **************************************************************** //
 
-float dataset_getParam_x(const Dataset *dataset, int index)
+const float *dataset_getParam_x(const Dataset *dataset)
 {
-    return dataset->param_x[index];
+    return dataset->param_x;
 }
 
-float dataset_getParam_y(const Dataset *dataset, int index)
+const float *dataset_getParam_y(const Dataset *dataset)
 {
-    return dataset->param_y[index];
+    return dataset->param_y;
 }
 
 int dataset_getSamples(const Dataset *dataset)

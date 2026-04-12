@@ -4,109 +4,119 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-inline static float PREDICT(const LinearModel *linearModel, const float x);
-
-// ================================================================ //
+// **************************************************************** //
+// * Linear Model * //
+// **************************************************************** //
 
 typedef struct LinearModel
 {
     float param_0, param_1;
 } LinearModel;
 
-// ================================================================ //
+// **************************************************************** //
 
 LinearModel *newLM(const float param_0, const float param_1)
 {
-    LinearModel *linearModel = (LinearModel *)malloc(sizeof(LinearModel));
+    LinearModel *linear_model = (LinearModel *)malloc(sizeof(LinearModel));
 
-    if (linearModel != NULL)
+    if (linear_model != NULL)
     {
-        linearModel->param_0 = param_0;
-        linearModel->param_1 = param_1;
+        linear_model->param_0 = param_0;
+        linear_model->param_1 = param_1;
 
-        return linearModel;
+        return linear_model;
     }
 
     return NULL;
 }
 
-void deleteLM(LinearModel **linearModel)
+void deleteLM(LinearModel **linear_model)
 {
-    if (*linearModel != NULL)
+    if (*linear_model != NULL)
     {
-        free(*linearModel);
-        *linearModel = NULL;
+        free(*linear_model);
+        *linear_model = NULL;
     }
 }
 
-// ================================================================ //
-
-float predict(const LinearModel *linearModel, const float x)
+void lm_setParam_0(LinearModel *linear_model, const float param_0)
 {
-    return (linearModel->param_0 + (linearModel->param_1 * x));
+    linear_model->param_0 = param_0;
 }
 
-float lm_getParam_0(const LinearModel *linearModel)
+float lm_getParam_0(const LinearModel *linear_model)
 {
-    return linearModel->param_0;
+    return linear_model->param_0;
 }
 
-float lm_getParam_1(const LinearModel *linearModel)
+void lm_setParam_1(LinearModel *linear_model, const float param_1)
 {
-    return linearModel->param_1;
+    linear_model->param_1 = param_1;
 }
 
-// ================================================================ //
-
-float MSE(const Dataset *dataset, const LinearModel *linearModel)
+float lm_getParam_1(const LinearModel *linear_model)
 {
-    float error = 0.0f;
+    return linear_model->param_1;
+}
+
+// **************************************************************** //
+
+float predict(const LinearModel *linear_model, const float x)
+{
+    return (linear_model->param_0 + (linear_model->param_1 * x));
+}
+
+inline static float PREDICT(const LinearModel *linear_model, const float x)
+{
+    return (linear_model->param_0 + (linear_model->param_1 * x));
+}
+
+float mse(const Dataset *dataset, const LinearModel *linear_model)
+{
+    float mean_squared_error = 0.0f;
+
+    const float *param_x = dataset_getParam_x(dataset);
+    const float *param_y = dataset_getParam_y(dataset);
+
     const int samples = dataset_getSamples(dataset);
 
-#pragma omp parallel for reduction(+ : error)
+#pragma omp parallel for reduction(+ : mean_squared_error)
     for (int i = 0; i < samples; i++)
     {
-        const float e = dataset_getParam_y(dataset, i) - PREDICT(linearModel, dataset_getParam_x(dataset, i));
-        error += e * e;
+        const float e = param_y[i] - PREDICT(linear_model, param_x[i]);
+        mean_squared_error += e * e;
     }
 
-    return error / samples;
+    return mean_squared_error / samples;
 }
 
-void train(const Dataset *dataset, LinearModel *linearModel, float trainingRate, int epochs)
+void train(const Dataset *dataset, LinearModel *linear_model, const float training_rate, const int epochs)
 {
-    if ((linearModel == NULL) || (dataset == NULL) || (dataset_getSamples(dataset) == 0))
+    if ((linear_model == NULL) || (dataset == NULL) || (dataset_getSamples(dataset) == 0))
     {
         return;
     }
 
     const int samples = dataset_getSamples(dataset);
+    const float *param_x = dataset_getParam_x(dataset);
+    const float *param_y = dataset_getParam_y(dataset);
 
     for (int epoch = 0; epoch < epochs; epoch++)
     {
-        float sumGrad_0 = 0.0f;
-        float sumGrad_1 = 0.0f;
+        float sum_grad_0 = 0.0f;
+        float sum_grad_1 = 0.0f;
 
-#pragma omp parallel for reduction(+ : sumGrad_0, sumGrad_1)
+#pragma omp parallel for reduction(+ : sum_grad_0, sum_grad_1)
         for (int i = 0; i < samples; i++)
         {
-            const float param_x = dataset_getParam_x(dataset, i);
-            const float param_y = dataset_getParam_y(dataset, i);
+            const float prediction = PREDICT(linear_model, param_x[i]);
+            const float grad_0 = 2.0f * (prediction - param_y[i]);
 
-            const float error = PREDICT(linearModel, param_x);
-
-            sumGrad_0 += 2.0f * (error - param_y);
-            sumGrad_1 += 2.0f * param_x * (error - param_y);
+            sum_grad_0 += grad_0;
+            sum_grad_1 += param_x[i] * grad_0;
         }
 
-        linearModel->param_0 -= trainingRate * (sumGrad_0 / samples);
-        linearModel->param_1 -= trainingRate * (sumGrad_1 / samples);
+        linear_model->param_0 -= training_rate * (sum_grad_0 / samples);
+        linear_model->param_1 -= training_rate * (sum_grad_1 / samples);
     }
-}
-
-// ================================================================ //
-
-inline static float PREDICT(const LinearModel *linearModel, const float x)
-{
-    return (linearModel->param_0 + (linearModel->param_1 * x));
 }
