@@ -1,6 +1,8 @@
-// ================================================================ //
-// Dataset loading test //
-// ================================================================ //
+// **************************************************************** //
+// * Dataset loading test * //
+// **************************************************************** //
+
+// * FIX: dataset_getParam_y, dataset_getParam_x * //
 
 #include <ml.h>
 #include <stdio.h>
@@ -8,7 +10,7 @@
 int main(void)
 {
     LinearModel *linearModel = newLM(1.0f, 3.0f);
-    Dataset *dataset = newDataset("datasets/AI_Student_Life_Pakistan_2026.csv", "Age", "Daily_Usage_Hours", 20);
+    Dataset *dataset = newDataset("tests/datasets/AI_Student_Life_Pakistan_2026.csv", "Age", "Daily_Usage_Hours", 20);
 
     puts("[Predicting Daily Usage Hours, based on Age]\n");
 
