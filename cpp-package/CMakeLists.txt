@@ -5,11 +5,13 @@ add_library(ml STATIC)
 set_target_properties(ml PROPERTIES
     CXX_STANDARD 20
     CXX_STANDARD_REQUIRED True
+    LINKER_LANGUAGE CXX
 )
 
 target_sources(ml
     PRIVATE
         LinearModel.cpp
+        Dataset.cpp
 
     PUBLIC
         FILE_SET HEADERS

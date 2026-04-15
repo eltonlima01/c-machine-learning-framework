@@ -1,6 +1,7 @@
 #add_executable(test linear.c)
 #add_executable(test omp.c)
-add_executable(test linear.cpp)
+#add_executable(test linear.cpp)
+add_executable(test dataset.cpp)
 
 #find_package(OpenMP REQUIRED)
 

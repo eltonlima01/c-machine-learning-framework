@@ -1,9 +1,7 @@
 cmake_minimum_required(VERSION 3.23)
 
-project(C_Machine_Learning_Framework C)
+project(C_Machine_Learning_Framework C CXX)
 
-set(CMAKE_C_STANDARD 99)
-set(CMAKE_C_STANDARD_REQUIRED True)
-
-add_subdirectory(ml)
+add_subdirectory(src)
+add_subdirectory(cpp-package)
 add_subdirectory(tests)
