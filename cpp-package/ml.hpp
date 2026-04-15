@@ -1,11 +1,12 @@
 #pragma once
 
+namespace ML
+{
+
 // ****************************************************************
 // * Linear Model
 // ****************************************************************
 
-namespace ML
-{
 class LinearModel
 {
   public:
@@ -45,4 +46,36 @@ class LinearModel
   private:
     float param0, param1;
 };
+
+// ****************************************************************
+// * Dataset
+// ****************************************************************
+
+class Dataset
+{
+  public:
+    Dataset(const char *datasetPath, const char *paramX, const char *paramY);
+    ~Dataset();
+
+    int getDatasetSize() const
+    {
+        return datasetSize;
+    }
+
+    const float *getParamXData() const
+    {
+        return paramXData;
+    }
+
+    const float *getParamYData() const
+    {
+        return paramYData;
+    }
+
+  private:
+    int datasetSize{0};
+    float *paramXData{nullptr};
+    float *paramYData{nullptr};
+};
+
 } // namespace ML
