@@ -101,27 +101,35 @@ void train(const Dataset *dataset, LinearModel *linear_model, const float traini
 
     const int samples = dataset_getSamples(dataset);
 
-    const float *param_x = dataset_getParam_x(dataset);
-    const float *param_y = dataset_getParam_y(dataset);
+    float param_0 = linear_model->param_0;
+    float param_1 = linear_model->param_1;
 
-    const float alpha = training_rate / samples;
+    const float * restrict param_x = dataset_getParam_x(dataset);
+    const float * restrict param_y = dataset_getParam_y(dataset);
+
+    const float k = 2.0f * training_rate / samples;
 
     for (int epoch = 0; epoch < epochs; epoch++)
     {
-        float sum_grad_0 = 0.0f;
-        float sum_grad_1 = 0.0f;
+        float grad_0 = 0.0f;
+        float grad_1 = 0.0f;
 
-#pragma omp parallel for reduction(+ : sum_grad_0, sum_grad_1) if (samples > OMP_THRESHOLD)
+#pragma omp parallel for simd reduction(+ : grad_0, grad_1) if (samples > OMP_THRESHOLD)
         for (int i = 0; i < samples; i++)
         {
-            const float prediction = PREDICT(linear_model, param_x[i]);
-            const float grad_0 = 2.0f * (prediction - param_y[i]);
+            const float x = param_x[i];
+            const float grad = param_0 + (param_1 * x) - param_y[i];
 
-            sum_grad_0 += grad_0;
-            sum_grad_1 += param_x[i] * grad_0;
+            grad_0 += grad;
+            grad_1 += x * grad;
         }
 
-        linear_model->param_0 -= alpha * sum_grad_0;
-        linear_model->param_1 -= alpha * sum_grad_1;
+        param_0 -= k * grad_0;
+        param_1 -= k * grad_1;
     }
+
+    linear_model->param_0 = param_0;
+    linear_model->param_1 = param_1;
 }
+
+#undef OMP_THRESHOLD
