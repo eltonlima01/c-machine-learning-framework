@@ -10,126 +10,126 @@
 // * Linear Model * //
 // **************************************************************** //
 
-typedef struct LinearModel
+typedef struct MLLinearModel
 {
-    float param_0, param_1;
-} LinearModel;
+    float param0, param1;
+} MLLinearModel;
 
 // **************************************************************** //
 
-LinearModel *newLM(const float param_0, const float param_1)
+MLLinearModel *mlNewLinearModel(const float param0, const float param1)
 {
-    LinearModel *linear_model = (LinearModel *)malloc(sizeof(LinearModel));
+    MLLinearModel *linearModel = (MLLinearModel *)malloc(sizeof(MLLinearModel));
 
-    if (linear_model != NULL)
+    if (linearModel != NULL)
     {
-        linear_model->param_0 = param_0;
-        linear_model->param_1 = param_1;
+        linearModel->param0 = param0;
+        linearModel->param1 = param1;
 
-        return linear_model;
+        return linearModel;
     }
 
     return NULL;
 }
 
-void deleteLM(LinearModel **linear_model)
+void mlDeleteLinearModel(MLLinearModel **linearModel)
 {
-    if (*linear_model != NULL)
+    if (*linearModel != NULL)
     {
-        free(*linear_model);
-        *linear_model = NULL;
+        free(*linearModel);
+        *linearModel = NULL;
     }
 }
 
-void lm_setParam_0(LinearModel *linear_model, const float param_0)
+void mlSetLinearModelParam0(MLLinearModel *linearModel, const float param0)
 {
-    linear_model->param_0 = param_0;
+    linearModel->param0 = param0;
 }
 
-float lm_getParam_0(const LinearModel *linear_model)
+float mlGetLinearModelParam0(const MLLinearModel *linearModel)
 {
-    return linear_model->param_0;
+    return linearModel->param0;
 }
 
-void lm_setParam_1(LinearModel *linear_model, const float param_1)
+void mlSetLinearModelParam1(MLLinearModel *linearModel, const float param1)
 {
-    linear_model->param_1 = param_1;
+    linearModel->param1 = param1;
 }
 
-float lm_getParam_1(const LinearModel *linear_model)
+float mlGetLinearModelParam1(const MLLinearModel *linearModel)
 {
-    return linear_model->param_1;
+    return linearModel->param1;
 }
 
 // **************************************************************** //
 
-float predict(const LinearModel *linear_model, const float x)
+float mlPredict(const MLLinearModel *linearModel, const float x)
 {
-    return (linear_model->param_0 + (linear_model->param_1 * x));
+    return (linearModel->param0 + (linearModel->param1 * x));
 }
 
-inline static float PREDICT(const LinearModel *linear_model, const float x)
+inline static float PREDICT(const MLLinearModel *linearModel, const float x)
 {
-    return (linear_model->param_0 + (linear_model->param_1 * x));
+    return (linearModel->param0 + (linearModel->param1 * x));
 }
 
-float mse(const Dataset *dataset, const LinearModel *linear_model)
+float mlMSE(const MLDataset *dataset, const MLLinearModel *linearModel)
 {
-    float mean_squared_error = 0.0f;
+    const int size = mlGetDatasetSize(dataset);
+    
+    const float * restrict paramX = mlGetDatasetParamX(dataset);
+    const float * restrict paramY = mlGetDatasetParamY(dataset);
 
-    const int samples = dataset_getSamples(dataset);
+    float meanSquaredError = 0.0f;
 
-    const float *param_x = dataset_getParam_x(dataset);
-    const float *param_y = dataset_getParam_y(dataset);
-
-#pragma omp parallel for reduction(+ : mean_squared_error) if (samples > OMP_THRESHOLD)
-    for (int i = 0; i < samples; i++)
+#pragma omp parallel for simd reduction(+ : meanSquaredError) if (size > OMP_THRESHOLD)
+    for (int i = 0; i < size; i++)
     {
-        const float e = param_y[i] - PREDICT(linear_model, param_x[i]);
-        mean_squared_error += e * e;
+        const float e = paramY[i] - PREDICT(linearModel, paramX[i]);
+        meanSquaredError += e * e;
     }
 
-    return mean_squared_error / samples;
+    return meanSquaredError / size;
 }
 
-void train(const Dataset *dataset, LinearModel *linear_model, const float training_rate, const int epochs)
+void mlTrain(const MLDataset *dataset, MLLinearModel *linearModel, const float training_rate, const int epochs)
 {
-    if ((linear_model == NULL) || (dataset == NULL) || (dataset_getSamples(dataset) == 0))
+    if ((linearModel == NULL) || (dataset == NULL) || (mlGetDatasetSize(dataset) == 0))
     {
         return;
     }
 
-    const int samples = dataset_getSamples(dataset);
+    const int size = mlGetDatasetSize(dataset);
 
-    float param_0 = linear_model->param_0;
-    float param_1 = linear_model->param_1;
+    float param0 = linearModel->param0;
+    float param1 = linearModel->param1;
 
-    const float * restrict param_x = dataset_getParam_x(dataset);
-    const float * restrict param_y = dataset_getParam_y(dataset);
+    const float * restrict paramX = mlGetDatasetParamX(dataset);
+    const float * restrict paramY = mlGetDatasetParamY(dataset);
 
-    const float k = 2.0f * training_rate / samples;
+    const float k = 2.0f * training_rate / size;
 
     for (int epoch = 0; epoch < epochs; epoch++)
     {
-        float grad_0 = 0.0f;
-        float grad_1 = 0.0f;
+        float grad0 = 0.0f;
+        float grad1 = 0.0f;
 
-#pragma omp parallel for simd reduction(+ : grad_0, grad_1) if (samples > OMP_THRESHOLD)
-        for (int i = 0; i < samples; i++)
+#pragma omp parallel for simd reduction(+ : grad0, grad1) if (size > OMP_THRESHOLD)
+        for (int i = 0; i < size; i++)
         {
-            const float x = param_x[i];
-            const float grad = param_0 + (param_1 * x) - param_y[i];
+            const float x = paramX[i];
+            const float grad = param0 + (param1 * x) - paramY[i];
 
-            grad_0 += grad;
-            grad_1 += x * grad;
+            grad0 += grad;
+            grad1 += x * grad;
         }
 
-        param_0 -= k * grad_0;
-        param_1 -= k * grad_1;
+        param0 -= k * grad0;
+        param1 -= k * grad1;
     }
 
-    linear_model->param_0 = param_0;
-    linear_model->param_1 = param_1;
+    linearModel->param0 = param0;
+    linearModel->param1 = param1;
 }
 
 #undef OMP_THRESHOLD

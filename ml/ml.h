@@ -1,33 +1,29 @@
 #pragma once
 
-// **************************************************************** //
-// * Dataset * //
-// **************************************************************** //
+/* Dataset */
 
-typedef struct Dataset Dataset;
+typedef struct MLDataset MLDataset;
 
-Dataset *newDataset(const char *datasetPath, const char *param_x, const char *param_y, const int samples);
-void deleteDataset(Dataset **dataset);
+MLDataset *mlNewDataset(const char *datasetPath, const char *param_x, const char *param_y, const int samples);
+void mlDeleteDataset(MLDataset **dataset);
 
-int dataset_getSamples(const Dataset *dataset);
-const float *dataset_getParam_x(const Dataset *dataset);
-const float *dataset_getParam_y(const Dataset *dataset);
+int mlGetDatasetSize(const MLDataset *dataset);
+const float *mlGetDatasetParamX(const MLDataset *dataset);
+const float *mlGetDatasetParamY(const MLDataset *dataset);
 
-// **************************************************************** //
-// * Linear Model * //
-// **************************************************************** //
+/* Linear Model */
 
-typedef struct LinearModel LinearModel;
+typedef struct MLLinearModel MLLinearModel;
 
-LinearModel *newLM(const float param_0, const float param_1);
-void deleteLM(LinearModel **linear_model);
+MLLinearModel *mlNewLinearModel(const float param0, const float param1);
+void mlDeleteLinearModel(MLLinearModel **linearModel);
 
-void lm_setParam_0(LinearModel *linear_model, float param_0);
-float lm_getParam_0(const LinearModel *linear_model);
+void mlSetLinearModelParam0(MLLinearModel *linearModel, const float param0);
+float mlGetLinearModelParam0(const MLLinearModel *linearModel);
 
-void lm_setParam_1(LinearModel *linear_model, const float param_1);
-float lm_getParam_1(const LinearModel *linear_model);
+void mlSetLinearModelParam1(MLLinearModel *linearModel, const float param1);
+float mlGetLinearModelParam1(const MLLinearModel *linearModel);
 
-float predict(const LinearModel *linear_model, const float x);
-float mse(const Dataset *dataset, const LinearModel *linear_model);
-void train(const Dataset *dataset, LinearModel *linear_model, const float trainingRate, const int epochs);
+float mlPredict(const MLLinearModel *linearModel, const float x);
+float mlMSE(const MLDataset *dataset, const MLLinearModel *linearModel);
+void mlTrain(const MLDataset *dataset, MLLinearModel *linearModel, const float trainingRate, const int epochs);
