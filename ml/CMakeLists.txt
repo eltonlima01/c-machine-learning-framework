@@ -9,7 +9,7 @@ set_target_properties(ml PROPERTIES
 
 target_sources(ml
     PRIVATE
-        linear.c
+        ml.c
         dataset.c
 
     PUBLIC
@@ -23,5 +23,6 @@ find_package(OpenMP REQUIRED)
 
 target_link_libraries(ml
     PRIVATE
+        m   
         OpenMP::OpenMP_C
 )

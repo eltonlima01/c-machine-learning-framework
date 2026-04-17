@@ -1,29 +1,52 @@
 #pragma once
 
-/* Dataset */
+/* **************************************************************** */
+/*    Dataset struct definition for CSV loading & basic functions   */
+/* **************************************************************** */
 
 typedef struct MLDataset MLDataset;
 
 MLDataset *mlNewDataset(const char *datasetPath, const char *param_x, const char *param_y, const int samples);
+
+/* *************** */
+/* Basic functions */
+/* *************** */
+
 void mlDeleteDataset(MLDataset **dataset);
 
 int mlGetDatasetSize(const MLDataset *dataset);
-const float *mlGetDatasetParamX(const MLDataset *dataset);
-const float *mlGetDatasetParamY(const MLDataset *dataset);
+const float *mlGetDatasetParamXData(const MLDataset *dataset);
+const float *mlGetDatasetParamYData(const MLDataset *dataset);
 
-/* Linear Model */
+/* **************************************************************** */
+/*              Model struct creation & basic functions             */
+/* **************************************************************** */
 
-typedef struct MLLinearModel MLLinearModel;
+typedef struct MLModel MLModel;
 
-MLLinearModel *mlNewLinearModel(const float param0, const float param1);
-void mlDeleteLinearModel(MLLinearModel **linearModel);
+/* ********************* */
+/* Linear Model creation */
+/* ********************* */
 
-void mlSetLinearModelParam0(MLLinearModel *linearModel, const float param0);
-float mlGetLinearModelParam0(const MLLinearModel *linearModel);
+MLModel *mlNewLinear(const float param0, const float param1);
 
-void mlSetLinearModelParam1(MLLinearModel *linearModel, const float param1);
-float mlGetLinearModelParam1(const MLLinearModel *linearModel);
+/* *********************** */
+/* Logistic Model creation */
+/* *********************** */
 
-float mlPredict(const MLLinearModel *linearModel, const float x);
-float mlMSE(const MLDataset *dataset, const MLLinearModel *linearModel);
-void mlTrain(const MLDataset *dataset, MLLinearModel *linearModel, const float trainingRate, const int epochs);
+MLModel *mlNewLogistic(const float param0, const float param1);
+
+/* *************** */
+/* Basic functions */
+/* *************** */
+
+void mlDeleteModel(MLModel **model);
+
+float mlSigmoid(const float param);
+float mlPredict(const MLModel *model, const float param);
+float mlMSE(const MLDataset *dataset, const MLModel *model);
+int mlSigmoidClassification(const MLModel *model, const float param);
+void mlTrain(const MLDataset *dataset, MLModel *model, const float trainingRate, const int epochs);
+
+void mlGetModelParams(const MLModel *model, float *param0, float *param1);
+void mlSetModelParams(MLModel *model, const float param0, const float param1);
