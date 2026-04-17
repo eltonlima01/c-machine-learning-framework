@@ -1,25 +1,25 @@
+/* ******************** */
 /* Dataset loading test */
+/* ******************** */
 
 #include <ml.h>
 #include <stdio.h>
 
 int main(void)
 {
-    MLLinearModel *linearModel = mlNewLinearModel(1.0f, 3.0f);
-    MLDataset *dataset = mlNewDataset("tests/datasets/AI_Student_Life_Pakistan_2026.csv", "Age", "Daily_Usage_Hours", 20);
+    const char *paramX = "Age";
+    const char *paramY = "Daily_Usage_Hours";
 
-    puts("[Predicting Daily Usage Hours, based on Age]\n");
+    MLModel *model = mlNewLinear(1.0f, 3.0f);
+    MLDataset *dataset = mlNewDataset("tests/datasets/AI_Student_Life_Pakistan_2026.csv", paramX, paramY, 100);
 
-    printf("Linear model params: %.2f, %.2f\n\n", mlGetLinearModelParam0(linearModel), mlGetLinearModelParam1(linearModel));
+    float param0, param1;
+    mlGetModelParams(model, &param0, &param1);
 
-    printf("3rd ocorrence: %.2f (Age) -> %.2f (Daily Usage Hours)\n", mlGetDatasetParamX(dataset),
-           mlGetDatasetParamY(dataset));
+    printf("Model parameters: %.3f, %.3f\n", param0, param1);
+    printf("Prediction for 3rd ocurrence of %s -> %s: %.3f\n", paramX, paramY, mlPredict(model, mlGetDatasetParamXData(dataset)[2]));
 
-    printf("3rd ocorrence (prediction): %.2f + (%.2f)x%.2f (Age) -> %.2f (Daily Usage Hours)\n",
-           mlGetLinearModelParam0(linearModel), mlGetLinearModelParam1(linearModel), mlGetDatasetParamX(dataset)[2],
-           mlPredict(linearModel, mlGetDatasetParamX(dataset)[2]));
-
-    mlDeleteLinearModel(&linearModel);
+    mlDeleteModel(&model);
     mlDeleteDataset(&dataset);
 
     return 0;

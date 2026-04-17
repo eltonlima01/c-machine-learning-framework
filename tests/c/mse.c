@@ -1,17 +1,22 @@
+/* *********************************** */
 /* Mean Squared Error calculation test */
+/* *********************************** */
 
 #include <ml.h>
 #include <stdio.h>
 
 int main(void)
 {
-    MLLinearModel *linearModel = mlNewLinearModel(1.0f, 3.0f);
-    MLDataset *dataset = mlNewDataset("tests/datasets/AI_Student_Life_Pakistan_2026.csv", "Age", "Daily_Usage_Hours", 20);
+    MLModel *model = mlNewLinear(1.0f, 3.0f);
+    MLDataset *dataset = mlNewDataset("tests/datasets/AI_Student_Life_Pakistan_2026.csv", "Age", "Daily_Usage_Hours", 100);
 
-    printf("Linear model params: %.2f, %.2f\n", mlGetLinearModelParam0(linearModel), mlGetLinearModelParam1(linearModel));
-    printf("Mean squared error: %.2f\n", mlMSE(dataset, linearModel));
+    float param0, param1;
+    mlGetModelParams(model, &param0, &param1);
 
-    mlDeleteLinearModel(&linearModel);
+    printf("Model parameters: %.3f, %.3f\n", param0, param1);
+    printf("Mean squared error for Age -> Daily Usage Hours: %.3f\n", mlMSE(dataset, model));
+
+    mlDeleteModel(&model);
     mlDeleteDataset(&dataset);
 
     return 0;

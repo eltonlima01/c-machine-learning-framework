@@ -1,15 +1,11 @@
 add_executable(test
     #linear.c
-    #mse.c
+    #logistic.c
     #dataset.c
-    #train.c
-    omp.c
+    #mse.c
+    train.c
 )
 
 target_link_libraries(test
-    PRIVATE
-        ml
-        OpenMP::OpenMP_C
+    ml
 )
-
-find_package(OpenMP REQUIRED)
