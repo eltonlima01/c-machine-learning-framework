@@ -4,16 +4,20 @@
 #include <stdlib.h>
 #include <string.h>
 
-/* Dataset */
+/* **************************************************************** */
+/*    Dataset struct definition for CSV loading & basic functions   */
+/* **************************************************************** */
 
 typedef struct MLDataset
 {
     int size;
-    float *paramX;
-    float *paramY;
+    float *paramXData;
+    float *paramYData;
 } MLDataset;
 
-// **************************************************************** //
+/* ***************************************** */
+/* Dataset struct definition for CSV loading */
+/* ***************************************** */
 
 MLDataset *mlNewDataset(const char *datasetPath, const char *paramX, const char *paramY, const int size)
 {
@@ -26,19 +30,19 @@ MLDataset *mlNewDataset(const char *datasetPath, const char *paramX, const char 
 
     dataset->size = 0;
 
-    dataset->paramX = (float *)malloc(size * sizeof(float));
+    dataset->paramXData = (float *)malloc(size * sizeof(float));
 
-    if (dataset->paramX == NULL)
+    if (dataset->paramXData == NULL)
     {
         free(dataset);
         return NULL;
     }
 
-    dataset->paramY = (float *)malloc(size * sizeof(float));
+    dataset->paramYData = (float *)malloc(size * sizeof(float));
 
-    if (dataset->paramY == NULL)
+    if (dataset->paramYData == NULL)
     {
-        free(dataset->paramX);
+        free(dataset->paramXData);
         free(dataset);
 
         return NULL;
@@ -68,10 +72,22 @@ MLDataset *mlNewDataset(const char *datasetPath, const char *paramX, const char 
     int index_y = -1;
     int current_column = 0;
 
-    char *token = strtok(buffer, ",");
-
-    while (token != NULL)
+    char *p = buffer;
+    while (*p != '\0')
     {
+        char *token = p;
+
+        while((*p != ',') && (*p != '\0'))
+        {
+            p++;
+        }
+
+        if (*p == ',')
+        {
+            *p = '\0';
+            p++;
+        }
+
         if (strcmp(token, paramX) == 0)
         {
             index_x = current_column;
@@ -83,7 +99,6 @@ MLDataset *mlNewDataset(const char *datasetPath, const char *paramX, const char 
         }
 
         current_column++;
-        token = strtok(NULL, ",");
     }
 
     if ((index_x == -1) || (index_y == -1))
@@ -96,15 +111,29 @@ MLDataset *mlNewDataset(const char *datasetPath, const char *paramX, const char 
 
     while (fgets(buffer, sizeof(buffer), file) && dataset->size < size)
     {
+        buffer [strcspn(buffer, "\r\n")] = 0;
         current_column = 0;
 
         float f_x = 0.0f;
         float f_y = 0.0f;
 
-        token = strtok(buffer, ",");
+        char *p = buffer;
 
-        while (token != NULL)
+        while (*p != '\0')
         {
+            char *token = p;
+
+            while((*p != ',') && (*p != '\0'))
+            {
+                p++;
+            }
+
+            if (*p == ',')
+            {
+                *p = '\0';
+                p++;
+            }
+
             if (current_column == index_x)
             {
                 f_x = atof(token);
@@ -116,11 +145,10 @@ MLDataset *mlNewDataset(const char *datasetPath, const char *paramX, const char 
             }
 
             current_column++;
-            token = strtok(NULL, ",");
         }
 
-        dataset->paramX[dataset->size] = f_x;
-        dataset->paramY[dataset->size] = f_y;
+        dataset->paramXData[dataset->size] = f_x;
+        dataset->paramYData[dataset->size] = f_y;
         dataset->size++;
     }
 
@@ -128,28 +156,30 @@ MLDataset *mlNewDataset(const char *datasetPath, const char *paramX, const char 
     return dataset;
 }
 
+/* *************** */
+/* Basic functions */
+/* *************** */
+
 void mlDeleteDataset(MLDataset **dataset)
 {
-    if (*dataset != NULL)
+    if ((dataset != NULL) && (*dataset != NULL))
     {
-        free((*dataset)->paramX);
-        free((*dataset)->paramY);
+        free((*dataset)->paramXData);
+        free((*dataset)->paramYData);
 
         free(*dataset);
         *dataset = NULL;
     }
 }
 
-/* **************************************************************** */
-
-const float *mlGetDatasetParamX(const MLDataset *dataset)
+const float *mlGetDatasetParamXData(const MLDataset *dataset)
 {
-    return dataset->paramX;
+    return dataset->paramXData;
 }
 
-const float *mlGetDatasetParamY(const MLDataset *dataset)
+const float *mlGetDatasetParamYData(const MLDataset *dataset)
 {
-    return dataset->paramY;
+    return dataset->paramYData;
 }
 
 int mlGetDatasetSize(const MLDataset *dataset)
