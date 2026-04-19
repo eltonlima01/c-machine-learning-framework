@@ -7,18 +7,11 @@
 
 #define OMP_THRESHOLD 1024
 
-typedef enum RegressionType
-{
-    Linear = 0,
-    Logistic = 1
-} RegressionType;
-
 inline static float SIGMOID(const float param);
-inline static float SIGMOIDCLASSIFICATION(const float param);
 inline static float PREDICT(const float param0, const float param1, const float x);
 
 /* **************************************************************** */
-/*              Model struct creation & basic functions             */
+/*             Model struct definition & basic functions            */
 /* **************************************************************** */
 
 typedef struct MLModel
@@ -27,51 +20,25 @@ typedef struct MLModel
     RegressionType regressionType;
 } MLModel;
 
-/* ********************* */
-/* Linear Model creation */
-/* ********************* */
-
-MLModel *mlNewLinear(const float param0, const float param1)
+MLModel *mlNewModel(RegressionType regressionType, const float param0, const float param1)
 {
-    MLModel *model = (MLModel *)malloc(sizeof(MLModel));
-
-    if (model != NULL)
+    if ((regressionType == ML_LINEAR) || (regressionType == ML_LOGISTIC))
     {
-        model->regressionType = Linear;
+        MLModel *model = (MLModel *)malloc(sizeof(MLModel));
 
-        model->param0 = param0;
-        model->param1 = param1;
+        if (model != NULL)
+        {
+            model->regressionType = regressionType;
 
-        return model;
+            model->param0 = param0;
+            model->param1 = param1;
+
+            return model;
+        }
     }
 
     return NULL;
 }
-
-/* *********************** */
-/* Logistic Model creation */
-/* *********************** */
-
-MLModel *mlNewLogistic(const float param0, const float param1)
-{
-    MLModel *model = (MLModel *)malloc(sizeof(MLModel));
-
-    if (model != NULL)
-    {
-        model->regressionType = Logistic;
-
-        model->param0 = param0;
-        model->param1 = param1;
-
-        return model;
-    }
-
-    return NULL;
-}
-
-/* *************** */
-/* Basic functions */
-/* *************** */
 
 void mlDeleteModel(MLModel **model)
 {
@@ -94,31 +61,17 @@ void mlSetModelParams(MLModel *model, const float param0, const float param1)
     model->param1 = param1;
 }
 
-/* Sigmoid */
-
-float mlSigmoid(const float param)
-{
-    return (1.0f / (1.0f + expf(-param)));
-}
-
-/* Sigmoid classification */
-
-int mlSigmoidClassification(const MLModel *model, const float param)
-{
-    return (SIGMOID(model->param0 + (model->param1 * param)) >= 0.5) ? 1 : 0;
-}
-
-/* Prediction */
+/* *************** */
+/* Basic functions */
+/* *************** */
 
 float mlPredict(const MLModel *model, const float param)
 {
-    return (model->regressionType == Linear) ? (model->param0 + (model->param1 * param))
-                                             : SIGMOIDCLASSIFICATION(model->param0 + (model->param1 * param));
+    return (model->regressionType == ML_LINEAR) ? (model->param0 + (model->param1 * param))
+                                                : SIGMOID(model->param0 + (model->param1 * param));
 }
 
-/* Mean squared error */
-
-float mlMSE(const MLDataset *dataset, const MLModel *model)
+float mlMSE(const MLModel *restrict model, const MLDataset *restrict dataset)
 {
     const int size = mlGetDatasetSize(dataset);
 
@@ -130,7 +83,7 @@ float mlMSE(const MLDataset *dataset, const MLModel *model)
 
     float meanSquaredError = 0.0f;
 
-    if (model->regressionType == Linear)
+    if (model->regressionType == ML_LINEAR)
     {
 #pragma omp parallel for simd reduction(+ : meanSquaredError) if (size > OMP_THRESHOLD)
         for (int i = 0; i < size; i++)
@@ -152,9 +105,8 @@ float mlMSE(const MLDataset *dataset, const MLModel *model)
     return meanSquaredError / size;
 }
 
-/* Training */
-
-void mlTrain(const MLDataset *dataset, MLModel *model, const float trainingRate, const int epochs)
+void mlTrainModel(MLModel *restrict model, const MLDataset *restrict dataset, const float trainingRate,
+                  const int epochs)
 {
     if ((model == NULL) || (dataset == NULL) || (mlGetDatasetSize(dataset) == 0))
     {
@@ -169,7 +121,7 @@ void mlTrain(const MLDataset *dataset, MLModel *model, const float trainingRate,
     const float *restrict paramX = mlGetDatasetParamXData(dataset);
     const float *restrict paramY = mlGetDatasetParamYData(dataset);
 
-    if (model->regressionType == Linear)
+    if (model->regressionType == ML_LINEAR)
     {
         const float k = 2.0f * trainingRate / datasetSize;
 
@@ -225,11 +177,6 @@ void mlTrain(const MLDataset *dataset, MLModel *model, const float trainingRate,
 inline static float SIGMOID(const float param)
 {
     return (1.0f / (1.0f + expf(-param)));
-}
-
-inline static float SIGMOIDCLASSIFICATION(const float param)
-{
-    return (SIGMOID(param) >= 0.5) ? 1.0f : 0.0f;
 }
 
 inline static float PREDICT(const float param0, const float param1, const float param)
