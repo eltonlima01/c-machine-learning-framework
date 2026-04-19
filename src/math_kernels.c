@@ -2,8 +2,8 @@
 
 #define OMP_THRESHOLD 1024
 
-void train(float *restrict param0, float *restrict param1, const float *paramX, const float *paramY, const int samples,
-           const float training_rate, const int epochs)
+void train(float *ML_RESTRICT param0, float *ML_RESTRICT param1, const float *ML_RESTRICT paramX,
+           const float *ML_RESTRICT paramY, const int samples, const float training_rate, const int epochs)
 {
     const float k = 2.0f * training_rate / samples;
 
