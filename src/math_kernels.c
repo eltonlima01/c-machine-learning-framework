@@ -32,3 +32,5 @@ void train(float *restrict param0, float *restrict param1, const float *paramX, 
     *param0 = p0;
     *param1 = p1;
 }
+
+#undef OMP_THRESHOLD

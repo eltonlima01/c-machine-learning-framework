@@ -1,9 +1,9 @@
 add_executable(test
-    #linear.c
+    model.c
     #logistic.c
     #dataset.c
     #mse.c
-    train.c
+    #train.c
 )
 
 target_link_libraries(test
