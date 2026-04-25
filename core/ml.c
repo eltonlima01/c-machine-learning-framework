@@ -7,8 +7,8 @@
 
 #define OMP_THRESHOLD 1024
 
-inline static float SIGMOID(const float param);
-inline static float PREDICT(const float param0, const float param1, const float x);
+inline static float PREDICT_LOGISTIC(const float param);
+inline static float PREDICT_LINEAR(const float param0, const float param1, const float x);
 
 /* **************************************************************** */
 /*             Model struct definition & basic functions            */
@@ -68,7 +68,7 @@ void mlSetModelParams(MLModel *model, const float param0, const float param1)
 float mlPredict(const MLModel *model, const float param)
 {
     return (model->regressionType == ML_LINEAR) ? (model->param0 + (model->param1 * param))
-                                                : SIGMOID(model->param0 + (model->param1 * param));
+                                                : PREDICT_LOGISTIC(model->param0 + (model->param1 * param));
 }
 
 float mlMSE(const MLModel *restrict model, const MLDataset *restrict dataset)
@@ -88,7 +88,7 @@ float mlMSE(const MLModel *restrict model, const MLDataset *restrict dataset)
 #pragma omp parallel for simd reduction(+ : meanSquaredError) if (size > OMP_THRESHOLD)
         for (int i = 0; i < size; i++)
         {
-            const float e = paramY[i] - PREDICT(param0, param1, paramX[i]);
+            const float e = paramY[i] - PREDICT_LINEAR(param0, param1, paramX[i]);
             meanSquaredError += e * e;
         }
     }
@@ -97,7 +97,7 @@ float mlMSE(const MLModel *restrict model, const MLDataset *restrict dataset)
 #pragma omp parallel for simd reduction(+ : meanSquaredError) if (size > OMP_THRESHOLD)
         for (int i = 0; i < size; i++)
         {
-            const float e = paramY[i] - SIGMOID(param0 + (param1 * paramX[i]));
+            const float e = paramY[i] - PREDICT_LOGISTIC(param0 + (param1 * paramX[i]));
             meanSquaredError += e * e;
         }
     }
@@ -134,7 +134,7 @@ void mlTrainModel(MLModel *restrict model, const MLDataset *restrict dataset, co
             for (int i = 0; i < datasetSize; i++)
             {
                 const float x = paramX[i];
-                const float grad = PREDICT(param0, param1, x) - paramY[i];
+                const float grad = PREDICT_LINEAR(param0, param1, x) - paramY[i];
 
                 grad0 += grad;
                 grad1 += x * grad;
@@ -157,7 +157,7 @@ void mlTrainModel(MLModel *restrict model, const MLDataset *restrict dataset, co
             for (int i = 0; i < datasetSize; i++)
             {
                 const float x = paramX[i];
-                const float grad = SIGMOID(param0 + (param1 * x)) - paramY[i];
+                const float grad = PREDICT_LOGISTIC(param0 + (param1 * x)) - paramY[i];
 
                 grad0 += grad;
                 grad1 += x * grad;
@@ -174,12 +174,12 @@ void mlTrainModel(MLModel *restrict model, const MLDataset *restrict dataset, co
 
 /* Inline */
 
-inline static float SIGMOID(const float param)
+inline static float PREDICT_LOGISTIC(const float param)
 {
     return (1.0f / (1.0f + expf(-param)));
 }
 
-inline static float PREDICT(const float param0, const float param1, const float param)
+inline static float PREDICT_LINEAR(const float param0, const float param1, const float param)
 {
     return (param0 + (param1 * param));
 }
