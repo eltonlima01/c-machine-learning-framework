@@ -11,6 +11,12 @@
 
 A high-performance, zero-dependency Machine Learning framework implemented from scratch in pure C, utilizing OpenMP for parallel workload distribution and Modern CMake for scalable build management.
 
+## Current Features
+
+- Unified **Model** interface for the initialization, management, and training of simple Linear and Logistic Regressions.
+- Built-in **Dataset** constructor with basic CSV data parsing & loading capabilities.
+- Low-level computation **kernels** for high-performance math, leveraging parallel processing via native SIMD/OpenMP integration.
+
 ## Dependencies
 
 - [CMake](https://cmake.org/) (VERSION 3.23+)
@@ -18,3 +24,12 @@ A high-performance, zero-dependency Machine Learning framework implemented from 
 
 - A C compiler with [OpenMP](https://www.openmp.org/) support
 > The OpenMP® API is a scalable model that gives programmers a simple and flexible interface for developing portable parallel applications in C/C++ and Fortran. OpenMP is suitable for a range of algorithms running on multicore nodes and chips, NUMA systems, GPUs, and other such devices attached to a CPU.
+
+## Project Structure
+
+| Directory | Description |
+| :--- | :--- |
+| **`/core`** | Main framework library, pure C API & core logic implementation |
+| **`/src`** | SIMD/OpenMP mathematical kernels implementation |
+| **`/cpp-package`** | C++ Object-Oriented wrapper interface & implementation |
+| **`/tests`** | Unit and integration tests for core logic & API validation |
