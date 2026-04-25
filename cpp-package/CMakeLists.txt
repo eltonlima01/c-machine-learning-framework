@@ -10,7 +10,7 @@ set_target_properties(ml PROPERTIES
 
 target_sources(ml
     PRIVATE
-        LinearModel.cpp
+        Model.cpp
         Dataset.cpp
 
     PUBLIC

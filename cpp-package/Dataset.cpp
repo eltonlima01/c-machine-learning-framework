@@ -99,14 +99,14 @@ Dataset::Dataset(const char *datasetPath, const char *paramX, const char *paramY
         }
     }
 
-    datasetSize = tmprrX.size();
+    size = tmprrX.size();
 
-    if (datasetSize > 0)
+    if (size > 0)
     {
-        paramXData = new float[datasetSize];
-        paramYData = new float[datasetSize];
+        paramXData = new float[size];
+        paramYData = new float[size];
 
-        for (int i = 0; i < datasetSize; i++)
+        for (int i = 0; i < size; i++)
         {
             paramXData[i] = tmprrX[i];
             paramYData[i] = tmprrY[i];
