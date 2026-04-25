@@ -32,4 +32,4 @@ A high-performance, zero-dependency Machine Learning framework implemented from 
 | **`/core`** | Main framework library, pure C API & core logic implementation |
 | **`/src`** | SIMD/OpenMP mathematical kernels implementation |
 | **`/cpp-package`** | C++ Object-Oriented wrapper interface & implementation |
-| **`/tests`** | Unit and integration tests for core logic & API validation |
+<!-- | **`/tests`** | Unit and integration tests for core logic & API validation | -->
